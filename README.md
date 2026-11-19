@@ -1,42 +1,40 @@
 # GigaDev AI Agent
 
-Windows desktop agent for GigaChat-assisted software and Minecraft mod development. This repository contains the source and build script; it does not contain a prebuilt Windows executable.
+Windows desktop starter for GigaChat-assisted Minecraft/software development. This repository contains source code; build the executable on Windows using `build.bat`.
 
 ## Features
 
-- Desktop chat UI using GigaChat.
-- Browse a selected GitHub repository and branch; double-click files to add them to model context.
-- Select local files to add to context. Selected content is sent to GigaChat; do not include secrets or private data unless you accept that disclosure.
-- Ask for file changes. The agent displays proposed files; after an explicit confirmation, it creates a **new branch and commit**. It does not change existing branches, delete files, force-push, or merge.
-- A second confirmation creates an optional draft pull request.
-- Changeable local project folder is saved in settings. The current agent does not execute local commands or builds.
+- GigaChat chat with selected GitHub and local-file context.
+- Browse a selected GitHub repository. Proposed file changes can be reviewed and published to a new branch after confirmation; draft PR creation requires separate confirmation. Existing branches are not modified; the app does not merge or force-push.
+- Local files are scoped to a configurable workspace. With Automation off, confirm each save; with it on, valid proposals are saved automatically only in the workspace. Replaced files are backed up; deletion is not supported.
+- Fabric 1.21.1 / Java 21 starter scaffold.
+- JSON prompt plugins in `%APPDATA%\\GigaDevSafeAssistant\\plugins`.
+- Changeable workspace folder in Settings.
 
-## GitHub setup and permissions
+The app does not run shell commands, builds, tests, or other programs. Paste build errors into chat for advice and review suggested fixes before applying.
 
-Create a fine-grained GitHub token limited to the intended repository. Grant only `Contents: Read and write` and `Pull requests: Read and write`. Enter it in Settings. The GitHub token stays local in the OS credential vault and is never sent to GigaChat. GitHub's permission checks remain in force; this app cannot bypass them. GitHub Actions/workflow paths and common secret paths are blocked for generated edits.
+## Credentials and safety
 
-## Run and build on Windows
+Create a fine-grained GitHub token limited to the intended repository with `Contents: Read and write` and `Pull requests: Read and write`. Enter it and your GigaChat Authorization key in Settings. Tokens are stored using the OS credential vault and are not sent to GigaChat. GitHub permissions remain enforced. Workflow/action paths and common secret paths are blocked for generated GitHub changes.
 
-Install Python 3.11+, then from PowerShell in this folder:
+Selected file contents are sent to GigaChat. Do not select secrets or private data unless you accept that disclosure. Review generated changes and GitHub diffs.
+
+## Run and build (Windows, Python 3.11+)
 
 ```powershell
 py -m venv .venv
-.\.venv\Scripts\Activate.ps1
+.\\.venv\\Scripts\\Activate.ps1
 pip install -r requirements.txt
 python agent_app.py
 ```
 
-Enter your GigaChat Authorization key and GitHub token under **Настройки**. Set repository owner/name and base branch, then click **Загрузить**. Double-click repository files to add context. Ask for changes using this format:
+Run `build.bat` to create `dist\\GigaDevAIAgent.exe`. The app needs internet access to use GigaChat/GitHub. The executable is unsigned; SmartScreen may warn.
+
+Request full-file edits in this format:
 
 ```text
 ---FILE: src/example.java---
 complete file contents
 ```
 
-Review the proposed file list and assistant response. **Опубликовать изменения…** creates a timestamped branch only after confirmation; creating a draft PR requires a separate confirmation. Review the GitHub diff and checks yourself before merging.
-
-Run `build.bat` on Windows to create `dist\GigaDevAIAgent.exe`. The executable is unsigned; SmartScreen may show a warning. The agent runs on the PC and connects to GitHub while open.
-
-## Security
-
-The app does not provide unrestricted PC access, execute arbitrary shell commands, run builds, automatically merge, delete files, or bypass GitHub permissions. Use a repository-scoped token and review every proposed diff. Model output may be incorrect. The OS credential vault stores tokens; revoke the GitHub token in GitHub settings when no longer needed.
+Example plugin JSON: `{"name":"Fabric conventions","prompt":"Explain target Minecraft version and keep changes focused."}`. Restart after editing plugins. Plugins provide instructions only and are not executable code.
