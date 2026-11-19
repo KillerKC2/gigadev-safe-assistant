@@ -1,0 +1,4 @@
+{
+  "name": "Fabric conventions",
+  "prompt": "For Minecraft Fabric Java code, use clear class names, avoid unnecessary dependencies, and explain which Minecraft/Fabric version each API targets."
+}
