@@ -1,55 +1,42 @@
-# GigaDev Safe Assistant
+# GigaDev AI Agent
 
-Windows desktop starter app for GigaChat-assisted Minecraft mod development. It includes a chat UI, a Fabric mod starter, safe import of public GitHub repositories, selected local-file context, and declarative prompt plugins.
+Windows desktop agent for GigaChat-assisted software and Minecraft mod development. This repository contains the source and build script; it does not contain a prebuilt Windows executable.
 
-## Safety boundaries
+## Features
 
-- The assistant does **not** get unrestricted control of your PC. It does not execute shell commands, run builds, install software, delete files, or browse arbitrary folders.
-- File proposals are constrained to the selected workspace. With **Automation** off, review the response and confirm before files are written. With it on, valid model-generated file blocks are written automatically **only inside that workspace**. Existing files are backed up as `*.gigadev-backup`.
-- Use a dedicated project folder for automated writes. Keep Automation off if you want to inspect every change.
-- Local files you attach and your prompts are sent to GigaChat. Do not send secrets or private source without reviewing your provider's terms.
-- GitHub import is HTTPS and public-repository only; it has a 30 MB download limit, rejects path traversal, and will not overwrite existing files.
-- Plugins are JSON prompt extensions only. Python plugins and executable extensions are deliberately not loaded.
+- Desktop chat UI using GigaChat.
+- Browse a selected GitHub repository and branch; double-click files to add them to model context.
+- Select local files to add to context. Selected content is sent to GigaChat; do not include secrets or private data unless you accept that disclosure.
+- Ask for file changes. The agent displays proposed files; after an explicit confirmation, it creates a **new branch and commit**. It does not change existing branches, delete files, force-push, or merge.
+- A second confirmation creates an optional draft pull request.
+- Changeable local project folder is saved in settings. The current agent does not execute local commands or builds.
 
-## Run from source
+## GitHub setup and permissions
 
-1. Install Python 3.11+ for Windows.
-2. In PowerShell, from this folder:
+Create a fine-grained GitHub token limited to the intended repository. Grant only `Contents: Read and write` and `Pull requests: Read and write`. Enter it in Settings. The GitHub token stays local in the OS credential vault and is never sent to GigaChat. GitHub's permission checks remain in force; this app cannot bypass them. GitHub Actions/workflow paths and common secret paths are blocked for generated edits.
 
-   ```powershell
-   py -m venv .venv
-   .\.venv\Scripts\Activate.ps1
-   pip install -r requirements.txt
-   python app.py
-   ```
+## Run and build on Windows
 
-3. On **Настройки и плагины**, enter your GigaChat Authorization key and OAuth scope (`GIGACHAT_API_PERS` is the default). The key is stored using Windows Credential Manager through `keyring`.
-4. Choose a dedicated workspace directory.
+Install Python 3.11+, then from PowerShell in this folder:
 
-The API key is never included in the repository. HTTPS certificate verification stays enabled.
-
-## Build a Windows executable
-
-Run `build.bat` on Windows with Python and the dependencies installed. The output is `dist\GigaDevSafeAssistant.exe`. The executable is not signed; Windows SmartScreen may show a warning for locally built binaries.
-
-## Use
-
-- **Чат**: ask for help with Java, Fabric, errors, or mod ideas. Ask explicitly for file blocks if you want a file proposal.
-- **Проект**: create a starter Fabric 1.21.1 / Java 21 project, import a public GitHub repository, and inspect workspace file names.
-- **Добавить локальные файлы в контекст**: select files to send as context; an extra confirmation is required for files outside the workspace.
-- **Настройки и плагины**: enable bounded automation and open `%APPDATA%\GigaDevSafeAssistant\plugins`.
-
-A plugin is a JSON file such as:
-
-```json
-{
-  "name": "Fabric conventions",
-  "prompt": "For Fabric code, prefer small classes and explain registry lifecycle."
-}
+```powershell
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+python agent_app.py
 ```
 
-Restart the app after adding or editing a plugin. Plugin instructions are model context, not executable code.
+Enter your GigaChat Authorization key and GitHub token under **Настройки**. Set repository owner/name and base branch, then click **Загрузить**. Double-click repository files to add context. Ask for changes using this format:
 
-## Notes
+```text
+---FILE: src/example.java---
+complete file contents
+```
 
-The Fabric scaffold is a minimal starter, not a guarantee of build success. Review the generated version numbers against Fabric's current documentation. Network/API failures are shown in the chat. The app does not automatically diagnose or execute compiler output; paste an error into chat to get suggestions.
+Review the proposed file list and assistant response. **Опубликовать изменения…** creates a timestamped branch only after confirmation; creating a draft PR requires a separate confirmation. Review the GitHub diff and checks yourself before merging.
+
+Run `build.bat` on Windows to create `dist\GigaDevAIAgent.exe`. The executable is unsigned; SmartScreen may show a warning. The agent runs on the PC and connects to GitHub while open.
+
+## Security
+
+The app does not provide unrestricted PC access, execute arbitrary shell commands, run builds, automatically merge, delete files, or bypass GitHub permissions. Use a repository-scoped token and review every proposed diff. Model output may be incorrect. The OS credential vault stores tokens; revoke the GitHub token in GitHub settings when no longer needed.
